@@ -1,7 +1,25 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using AdventOfCode2024.Solutions;
 
-foreach (var arg in args)
+var solutions = new Dictionary<int, IDay>
 {
-    Console.WriteLine(arg);
+    {1, new Day01()},
+    {2, new Day02()},
+};
+
+var chosenDays = args switch
+{
+    [] => [solutions.Keys.OrderDescending().First()],
+    ["--all"] => solutions.Keys.ToList(),
+    _ => args.Select(int.Parse).ToList(),
+};
+
+chosenDays.Sort();
+
+foreach (var day in chosenDays)
+{
+    if (solutions.TryGetValue(day, out var solution))
+    {
+        Console.WriteLine($"Day {day}");
+        solution.Run();
+    }
 }

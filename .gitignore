@@ -1,5 +1,6 @@
+bin/
+obj/
 .idea/
 input/
 .DS_Store
-bin/
-obj/
+*.DotSettings.user
