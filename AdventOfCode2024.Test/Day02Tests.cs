@@ -55,7 +55,7 @@ public class Day02Tests
     [Fact]
     public void TestPart1()
     {
-        Assert.Equal(_solution.Part1(_exampleInput), 2);
+        Assert.Equal(2, _solution.Part1(_exampleInput));
     }
 
     [Fact]
@@ -97,6 +97,6 @@ public class Day02Tests
     [Fact]
     public void TestPart2()
     {
-        Assert.Equal(_solution.Part2(_exampleInput), 4);
+        Assert.Equal(4, _solution.Part2(_exampleInput));
     }
 }
