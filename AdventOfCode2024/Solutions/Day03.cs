@@ -5,14 +5,15 @@ namespace AdventOfCode2024.Solutions;
 
 public class Day03 : IDay
 {
-    private readonly Regex _pattern = new(@"mul\((\d{1,3}),(\d{1,3})\)");
-
-    private int CalcMatch(Match match)
+    private readonly Regex _mulPattern = new(@"mul\(\d{1,3},\d{1,3}\)");
+    private readonly Regex _allPattern = new(@"(mul\(\d{1,3},\d{1,3}\)|do\(\)|don't\(\))");
+    
+    private int CalcMul(string s)
     {
-        var groups = match.Groups.ToList<Group>();
-        var left = int.Parse(groups[1].Value);
-        var right = int.Parse(groups[2].Value);
-        return left * right;
+        return s[4..^1]
+            .Split(',')
+            .Select(int.Parse)
+            .Aggregate((a, b) => a * b);
     }
     
     public int Part1(string[] input)
@@ -20,35 +21,12 @@ public class Day03 : IDay
         var total = 0;
 
         foreach (var line in input)
-            total += _pattern.Matches(line).Sum(CalcMatch);
-
-        return total;
-    }
-
-    private (int, bool) Calculate(string line, bool enable)
-    {
-        var matches = _pattern.Matches(line).ToList();
-        
-        if (enable)
         {
-            var disableIndex = line.IndexOf("don't()", StringComparison.Ordinal);
-
-            // no more "don't()" in this line
-            if (disableIndex < 0)
-                return (_pattern.Matches(line).Sum(CalcMatch), enable);
-
-            var start = matches.Where(match => match.Index < disableIndex).Sum(CalcMatch);
-            (var subtotal, enable) = Calculate(line[(disableIndex + 1)..], false);
-            return (start + subtotal, enable);
+            total += _mulPattern.Matches(line)
+                .Sum(match => CalcMul(match.Value));
         }
 
-        var enableIndex = line.IndexOf("do()", StringComparison.Ordinal);
-
-        // no more "do()" in this line
-        if (enableIndex < 0)
-            return (0, enable);
-
-        return Calculate(line[(enableIndex + 1)..], true);
+        return total;
     }
 
     public int Part2(string[] input)
@@ -58,8 +36,15 @@ public class Day03 : IDay
 
         foreach (var line in input)
         {
-            (var subtotal, enable) = Calculate(line, enable);
-            total += subtotal;
+            foreach (Match match in _allPattern.Matches(line))
+            {
+                if (match.Value == "do()")
+                    enable = true;
+                else if (match.Value == "don't()")
+                    enable = false;
+                else if (enable)
+                    total += CalcMul(match.Value);
+            }
         }
 
         return total;
