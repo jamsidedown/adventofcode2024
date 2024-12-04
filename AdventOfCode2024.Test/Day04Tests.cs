@@ -26,4 +26,11 @@ public class Day04Tests
         var result = _solution.Part1(exampleInput);
         Assert.Equal(18, result);
     }
+
+    [Fact]
+    public void TestPart2()
+    {
+        var result = _solution.Part2(exampleInput);
+        Assert.Equal(9, result);
+    }
 }
