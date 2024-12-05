@@ -16,12 +16,8 @@ public class Day04 : IDay
 
     private readonly char[] _xmas = ['X', 'M', 'A', 'S'];
     
-    private char[][] Parse()
-    {
-        return File.ReadAllLines(FileHelpers.GetFilepath(4))
-            .Select(line => line.ToArray())
-            .ToArray();
-    }
+    private char[][] Parse() =>
+        FileHelpers.ReadLines<char[]>(4, (s) => s.ToArray());
 
     private bool Inside(char[][] grid, XyPair coord)
     {

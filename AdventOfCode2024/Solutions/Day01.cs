@@ -7,19 +7,12 @@ public class Day01 : IDay
 {
     private (int[], int[]) Parse()
     {
-        var first = new List<int>();
-        var second = new List<int>();
+        var lines = FileHelpers.ReadAndSplitLines<int>(1, "   ");
+        
+        var first = lines.Select(line => line[0]).ToArray();
+        var second = lines.Select(line => line[1]).ToArray();
 
-        foreach (var line in File.ReadAllLines(FileHelpers.GetFilepath(1)))
-        {
-            var parts = line
-                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
-                .Select(int.Parse).ToArray();
-            first.Add(parts[0]);
-            second.Add(parts[1]);
-        }
-
-        return (first.ToArray(), second.ToArray());
+        return (first, second);
     }
 
     public int Part1(int[] left, int[] right)

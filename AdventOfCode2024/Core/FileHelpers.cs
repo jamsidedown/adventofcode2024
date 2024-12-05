@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Numerics;
+
 namespace AdventOfCode2024.Core;
 
 public static class FileHelpers
@@ -15,5 +18,35 @@ public static class FileHelpers
         }
 
         return Path.Join(directory.FullName, filename);
+    }
+
+    public static T[] ReadLines<T>(int day) where T : IParsable<T>, INumber<T>
+    {
+        var provider = new NumberFormatInfo();
+        return File.ReadAllLines(GetFilepath(day))
+            .Select(line => T.Parse(line, provider)).ToArray();
+    }
+
+    public static T[] ReadLines<T>(int day, Func<string, T> transform)
+    {
+        return File.ReadAllLines(GetFilepath(day))
+            .Select(transform)
+            .ToArray();
+    }
+
+    public static T[][] ReadAndSplitLines<T>(int day, string separator) where T : IParsable<T>, INumber<T>
+    {
+        var provider = new NumberFormatInfo();
+        var result = new List<T[]>();
+
+        foreach (var line in File.ReadAllLines(GetFilepath(day)))
+        {
+            var parts = line.Split(separator)
+                .Select(x => T.Parse(x, provider))
+                .ToArray();
+            result.Add(parts);
+        }
+
+        return result.ToArray();
     }
 }

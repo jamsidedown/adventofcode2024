@@ -4,14 +4,9 @@ namespace AdventOfCode2024.Solutions;
 
 public class Day02 : IDay
 {
-    private int[][] Parse()
-    {
-        return File.ReadAllLines(FileHelpers.GetFilepath(2))
-            .Select(line => line.Split(' ')
-                .Select(int.Parse).ToArray())
-            .ToArray();
-    }
-    
+    private int[][] Parse() =>
+        FileHelpers.ReadAndSplitLines<int>(2, " ");
+
     public bool IsValid(int[] report)
     {
         var diffs = report[..^1]
