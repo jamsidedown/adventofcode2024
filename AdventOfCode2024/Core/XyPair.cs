@@ -13,6 +13,12 @@ public readonly struct XyPair<T>(T x, T y) : IEquatable<XyPair<T>> where T : INu
     public static XyPair<T> operator +(XyPair<T> a, XyPair<T> b) =>
         new(a.X + b.X, a.Y + b.Y);
 
+    public static bool operator ==(XyPair<T> a, XyPair<T> b) =>
+        a.X == b.X && a.Y == b.Y;
+
+    public static bool operator !=(XyPair<T> a, XyPair<T> b) =>
+        a.X != b.X || a.Y != b.Y;
+
     public bool Equals(XyPair<T> other)
     {
         return X == other.X && Y == other.Y;

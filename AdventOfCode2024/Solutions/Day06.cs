@@ -24,39 +24,34 @@ public class Day06 : IDay
         return new XyPair<int>(0, 0);
     }
 
-    private bool IsObstacle(char[][] map, XyPair<int> coord)
-    {
-        if (coord.X < 0 || coord.X >= map[0].Length)
-            return false;
+    private bool Inside(char[][] map, XyPair<int> coord) =>
+        coord.X >= 0 && coord.X < map[0].Length && coord.Y >= 0 && coord.Y < map.Length;
 
-        if (coord.Y < 0 || coord.Y >= map.Length)
-            return false;
+    private bool IsObstacle(char[][] map, XyPair<int> coord) =>
+        map[coord.Y][coord.X] == '#';
 
-        return map[coord.Y][coord.X] == '#';
-    }
-    
     private HashSet<XyPair<int>> Walk(char[][] map, XyPair<int> start)
     {
         var position = start;
         var visited = new HashSet<XyPair<int>>();
         var direction = 0;
 
-        while (position.X >= 0 && position.X < map[0].Length
-            && position.Y >= 0&& position.Y < map.Length)
+        while (true)
         {
             visited.Add(position);
             
             var next = position + _vectors[direction % 4];
+
+            if (!Inside(map, next))
+                return visited;
             
             if (IsObstacle(map, next))
                 direction++;
             else
                 position = next;
         }
-
-        return visited;
     }
-
+    
     private char[][] MapWithObstacle(char[][] map, XyPair<int> obstacle)
     {
         var width = map[0].Length;
@@ -79,29 +74,64 @@ public class Day06 : IDay
         return newMap;
     }
 
-    private bool IsLoop(char[][] map, XyPair<int> start)
+    private bool Branch(char[][] map, HashSet<(XyPair<int>, int)> preBranchVisited, XyPair<int> start, int direction)
     {
         var position = start;
-        var visited = new HashSet<(XyPair<int>, int)>();
-        var direction = 0;
-
-        while (position.X >= 0 && position.X < map[0].Length
-            && position.Y >= 0 && position.Y < map.Length)
+        var visited = preBranchVisited.ToHashSet();
+        
+        while (true)
         {
-            direction %= 4;
+            var current = (position, direction);
             
-            if (!visited.Add((position, direction)))
+            // if current position and direction has been seen before it's a loop
+            if (!visited.Add(current))
                 return true;
             
             var next = position + _vectors[direction];
-            
+
+            if (!Inside(map, next))
+                return false;
+
             if (IsObstacle(map, next))
-                direction++;
+                direction = (direction + 1) % 4;
             else
                 position = next;
         }
+    }
 
-        return false;
+    private int CountLoops(char[][] map, XyPair<int> start)
+    {
+        var count = 0;
+        
+        var position = start;
+        var visited = new HashSet<(XyPair<int>, int)>();
+        var looped = new HashSet<XyPair<int>>();
+        var direction = 0;
+
+        while (true)
+        {
+            visited.Add((position, direction));
+            
+            var next = position + _vectors[direction];
+
+            if (!Inside(map, next))
+                return count;
+
+            if (IsObstacle(map, next))
+            {
+                direction = (direction + 1) % 4;
+                continue;
+            }
+            
+            // only branch if there hasn't previously been an obstacle at `next`
+            if (looped.Add(next))
+            {
+                if (Branch(MapWithObstacle(map, next), visited, position, (direction + 1) % 4))
+                    count++;
+            }
+                
+            position = next;
+        }
     }
     
     public int Part1(char[][] map)
@@ -113,20 +143,7 @@ public class Day06 : IDay
     public int Part2(char[][] map)
     {
         var start = FindStart(map);
-        var visited = Walk(map, start);
-        visited.Remove(FindStart(map));
-        
-        var count = 0;
-
-        Parallel.ForEach(visited, obstacle =>
-        {
-            var newMap = MapWithObstacle(map, obstacle);
-        
-            if (IsLoop(newMap, start))
-                Interlocked.Increment(ref count);
-        });
-        
-        return count;
+        return CountLoops(map, start);
     }
     
     public void Run()
