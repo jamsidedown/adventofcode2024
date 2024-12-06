@@ -74,17 +74,14 @@ public class Day06 : IDay
         return newMap;
     }
 
-    private bool Branch(char[][] map, HashSet<(XyPair<int>, int)> preBranchVisited, XyPair<int> start, int direction)
+    private bool Branch(char[][] map, HashSet<(XyPair<int>, int)> visited, XyPair<int> start, int direction)
     {
         var position = start;
-        var visited = preBranchVisited.ToHashSet();
         
         while (true)
         {
-            var current = (position, direction);
-            
             // if current position and direction has been seen before it's a loop
-            if (!visited.Add(current))
+            if (!visited.Add((position, direction)))
                 return true;
             
             var next = position + _vectors[direction];
@@ -115,7 +112,7 @@ public class Day06 : IDay
             var next = position + _vectors[direction];
 
             if (!Inside(map, next))
-                return count;
+                break;
 
             if (IsObstacle(map, next))
             {
@@ -126,12 +123,16 @@ public class Day06 : IDay
             // only branch if there hasn't previously been an obstacle at `next`
             if (looped.Add(next))
             {
-                if (Branch(MapWithObstacle(map, next), visited, position, (direction + 1) % 4))
+                var branchMap = MapWithObstacle(map, next);
+                var branchVisited = new HashSet<(XyPair<int>, int)>(visited);
+                if (Branch(branchMap, branchVisited, position, (direction + 1) % 4))
                     count++;
             }
                 
             position = next;
         }
+
+        return count;
     }
     
     public int Part1(char[][] map)
