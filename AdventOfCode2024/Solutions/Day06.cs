@@ -19,7 +19,7 @@ public class Day06 : IDay
         for (var y = 0; y < map.Length; y++)
         for (var x = 0; x < map[y].Length; x++)
             if (map[y][x] == '^')
-                return new XyPair<int>((int)x, (int)y);
+                return new XyPair<int>(x, y);
 
         return new XyPair<int>(0, 0);
     }
@@ -47,6 +47,7 @@ public class Day06 : IDay
             visited.Add(position);
             
             var next = position + _vectors[direction % 4];
+            
             if (IsObstacle(map, next))
                 direction++;
             else
@@ -81,20 +82,19 @@ public class Day06 : IDay
     private bool IsLoop(char[][] map, XyPair<int> start)
     {
         var position = start;
-        var visited = new HashSet<(int, int, int)>();
+        var visited = new HashSet<(XyPair<int>, int)>();
         var direction = 0;
 
         while (position.X >= 0 && position.X < map[0].Length
-            && position.Y >= 0&& position.Y < map.Length)
+            && position.Y >= 0 && position.Y < map.Length)
         {
             direction %= 4;
             
-            var current = (position.X, position.Y, direction);
-            if (!visited.Add(current))
+            if (!visited.Add((position, direction)))
                 return true;
             
-            var vector = _vectors[direction];
-            var next = position + vector;
+            var next = position + _vectors[direction];
+            
             if (IsObstacle(map, next))
                 direction++;
             else
