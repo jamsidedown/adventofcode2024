@@ -56,26 +56,52 @@ public class Day06 : IDay
         return visited;
     }
 
+    private char[][] MapWithObstacle(char[][] map, XyPair obstacle)
+    {
+        var width = map[0].Length;
+        var newMap = new char[map.Length][];
+
+        for (var y = 0; y < map.Length; y++)
+        {
+            if (obstacle.Y == y)
+            {
+                newMap[y] = new char[width];
+                Array.Copy(map[y], newMap[y], width);
+                newMap[y][obstacle.X] = '#';
+            }
+            else
+            {
+                newMap[y] = map[y];
+            }
+        }
+
+        return newMap;
+    }
+
     private bool IsLoop(char[][] map, XyPair start)
     {
         var position = start;
-        var visited = new Dictionary<XyPair, HashSet<int>>();
+        var visited = new Dictionary<XyPair, int>();
         var direction = 0;
 
         while (position.X >= 0 && position.X < map[0].Length
             && position.Y >= 0&& position.Y < map.Length)
         {
-            direction = direction % 4;
+            direction %= 4;
+            var dir = 1 << direction;
             var vector = _vectors[direction];
 
             if (visited.TryGetValue(position, out var vectors))
             {
-                if (!vectors.Add(direction))
+                
+                if ((vectors & dir) > 0)
                     return true;
+
+                visited[position] |= dir;
             }
             else
             {
-                visited.Add(position, [direction]);
+                visited.Add(position, dir);
             }
             
             var next = position + vector;
@@ -102,15 +128,13 @@ public class Day06 : IDay
         
         var count = 0;
 
-        foreach (var obstacle in originalVisited)
+        Parallel.ForEach(originalVisited, obstacle =>
         {
-            map[obstacle.Y][obstacle.X] = '#';
+            var newMap = MapWithObstacle(map, obstacle);
 
-            if (IsLoop(map, start))
-                count++;
-
-            map[obstacle.Y][obstacle.X] = '.';
-        }
+            if (IsLoop(newMap, start))
+                Interlocked.Increment(ref count);
+        });
         
         return count;
     }
