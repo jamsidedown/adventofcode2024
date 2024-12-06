@@ -6,25 +6,25 @@ public class Day06 : IDay
 {
     private char[][] Parse() => FileHelpers.ReadLines(6, s => s.ToArray());
 
-    private readonly XyPair[] _vectors = new[]
+    private readonly XyPair<int>[] _vectors = new[]
     {
-        new XyPair(0, -1),
-        new XyPair(1, 0),
-        new XyPair(0, 1),
-        new XyPair(-1, 0)
+        new XyPair<int>(0, -1),
+        new XyPair<int>(1, 0),
+        new XyPair<int>(0, 1),
+        new XyPair<int>(-1, 0)
     };
 
-    public XyPair FindStart(char[][] map)
+    public XyPair<int> FindStart(char[][] map)
     {
         for (var y = 0; y < map.Length; y++)
         for (var x = 0; x < map[y].Length; x++)
             if (map[y][x] == '^')
-                return new XyPair(x, y);
+                return new XyPair<int>((int)x, (int)y);
 
-        return new XyPair(0, 0);
+        return new XyPair<int>(0, 0);
     }
 
-    private bool IsObstacle(char[][] map, XyPair coord)
+    private bool IsObstacle(char[][] map, XyPair<int> coord)
     {
         if (coord.X < 0 || coord.X >= map[0].Length)
             return false;
@@ -35,10 +35,10 @@ public class Day06 : IDay
         return map[coord.Y][coord.X] == '#';
     }
     
-    private HashSet<XyPair> Walk(char[][] map, XyPair start)
+    private HashSet<XyPair<int>> Walk(char[][] map, XyPair<int> start)
     {
         var position = start;
-        var visited = new HashSet<XyPair>();
+        var visited = new HashSet<XyPair<int>>();
         var direction = 0;
 
         while (position.X >= 0 && position.X < map[0].Length
@@ -56,7 +56,7 @@ public class Day06 : IDay
         return visited;
     }
 
-    private char[][] MapWithObstacle(char[][] map, XyPair obstacle)
+    private char[][] MapWithObstacle(char[][] map, XyPair<int> obstacle)
     {
         var width = map[0].Length;
         var newMap = new char[map.Length][];
@@ -78,32 +78,22 @@ public class Day06 : IDay
         return newMap;
     }
 
-    private bool IsLoop(char[][] map, XyPair start)
+    private bool IsLoop(char[][] map, XyPair<int> start)
     {
         var position = start;
-        var visited = new Dictionary<XyPair, int>();
+        var visited = new HashSet<(int, int, int)>();
         var direction = 0;
 
         while (position.X >= 0 && position.X < map[0].Length
             && position.Y >= 0&& position.Y < map.Length)
         {
             direction %= 4;
-            var dir = 1 << direction;
-            var vector = _vectors[direction];
-
-            if (visited.TryGetValue(position, out var vectors))
-            {
-                
-                if ((vectors & dir) > 0)
-                    return true;
-
-                visited[position] |= dir;
-            }
-            else
-            {
-                visited.Add(position, dir);
-            }
             
+            var current = (position.X, position.Y, direction);
+            if (!visited.Add(current))
+                return true;
+            
+            var vector = _vectors[direction];
             var next = position + vector;
             if (IsObstacle(map, next))
                 direction++;
@@ -123,15 +113,15 @@ public class Day06 : IDay
     public int Part2(char[][] map)
     {
         var start = FindStart(map);
-        var originalVisited = Walk(map, start);
-        originalVisited.Remove(FindStart(map));
+        var visited = Walk(map, start);
+        visited.Remove(FindStart(map));
         
         var count = 0;
 
-        Parallel.ForEach(originalVisited, obstacle =>
+        Parallel.ForEach(visited, obstacle =>
         {
             var newMap = MapWithObstacle(map, obstacle);
-
+        
             if (IsLoop(newMap, start))
                 Interlocked.Increment(ref count);
         });

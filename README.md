@@ -45,6 +45,6 @@ $ dotnet run --project AdventOfCode2024 --all
 # to run in release mode (with optimisations)
 $ dotnet run -c Release --project AdventOfCode2024
 
-# to run with server GC (faster for day 6)
+# to run with server GC (for days when I dump too much on the SOH)
 $ DOTNET_gcServer=1 dotnet run -c Release --project AdventOfCode2024 6
 ```

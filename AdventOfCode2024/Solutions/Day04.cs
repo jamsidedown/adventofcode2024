@@ -8,7 +8,7 @@ public class Day04 : IDay
     // -
     // Y
     // +
-    private readonly XyPair[] _directions =
+    private readonly XyPair<int>[] _directions =
     [
         new(1, 0), new(1, 1), new(0, 1), new(-1, 1),
         new(-1, 0), new(-1, -1), new(0, -1), new(1, -1),
@@ -19,7 +19,7 @@ public class Day04 : IDay
     private char[][] Parse() =>
         FileHelpers.ReadLines<char[]>(4, (s) => s.ToArray());
 
-    private bool Inside(char[][] grid, XyPair coord)
+    private bool Inside(char[][] grid, XyPair<int> coord)
     {
         if (coord.X < 0 || coord.Y < 0)
             return false;
@@ -33,7 +33,7 @@ public class Day04 : IDay
         return true;
     }
 
-    private bool Walk(char[][] grid, XyPair coord, XyPair direction, char[] remaining)
+    private bool Walk(char[][] grid, XyPair<int> coord, XyPair<int> direction, char[] remaining)
     {
         if (remaining.Length == 0)
             return true;
@@ -69,7 +69,7 @@ public class Day04 : IDay
                 if (grid[x][y] != _xmas[0])
                     continue;
                 
-                var coord = new XyPair(x, y);
+                var coord = new XyPair<int>(x, y);
                 count += _directions.Count(dir => Walk(grid, coord, dir, _xmas[1..]));
             }
         }
