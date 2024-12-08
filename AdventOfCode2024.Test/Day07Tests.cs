@@ -4,7 +4,7 @@ namespace AdventOfCode2024.Test;
 
 public class Day07Tests
 {
-    private readonly string[] _lines = """
+    private readonly string[] _exampleLines = """
                                       190: 10 19
                                       3267: 81 40 27
                                       83: 17 5
@@ -21,8 +21,8 @@ public class Day07Tests
     [Fact]
     public void TestCanParseFirstExample()
     {
-        var parsed = _solution.Parse(_lines);
-        Assert.Equal(_lines.Length, parsed.Length);
+        var parsed = _solution.Parse(_exampleLines);
+        Assert.Equal(_exampleLines.Length, parsed.Length);
         Assert.Equal(190L, parsed[0].Target);
         Assert.Equal(2, parsed[0].Numbers.Length);
         Assert.Equal(10L, parsed[0].Numbers[0]);
@@ -32,7 +32,7 @@ public class Day07Tests
     [Fact]
     public void TestPart1()
     {
-        var equations = _solution.Parse(_lines);
+        var equations = _solution.Parse(_exampleLines);
         var result = _solution.Part1(equations);
         Assert.Equal(3749L, result);
     }
@@ -40,7 +40,7 @@ public class Day07Tests
     [Fact]
     public void TestPart2()
     {
-        var equations = _solution.Parse(_lines);
+        var equations = _solution.Parse(_exampleLines);
         var result = _solution.Part2(equations);
         Assert.Equal(11387L, result);
     }

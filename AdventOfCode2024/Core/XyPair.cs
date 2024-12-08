@@ -12,6 +12,15 @@ public readonly struct XyPair<T>(T x, T y) : IEquatable<XyPair<T>> where T : INu
 
     public static XyPair<T> operator +(XyPair<T> a, XyPair<T> b) =>
         new(a.X + b.X, a.Y + b.Y);
+    
+    public static XyPair<T> operator -(XyPair<T> a, XyPair<T> b) =>
+        new(a.X - b.X, a.Y - b.Y);
+    
+    public static XyPair<T> operator *(XyPair<T> a, T n) =>
+        new(a.X * n, a.Y * n);
+    
+    public static XyPair<T> operator /(XyPair<T> a, T n) =>
+        new(a.X / n, a.Y / n);
 
     public static bool operator ==(XyPair<T> a, XyPair<T> b) =>
         a.X == b.X && a.Y == b.Y;
@@ -24,4 +33,7 @@ public readonly struct XyPair<T>(T x, T y) : IEquatable<XyPair<T>> where T : INu
 
     public override bool Equals(object? obj) =>
         obj is XyPair<T> other && Equals(other);
+
+    public override string ToString() =>
+        $"({X}, {Y})";
 }
