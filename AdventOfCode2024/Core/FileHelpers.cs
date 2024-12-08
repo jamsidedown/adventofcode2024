@@ -20,6 +20,9 @@ public static class FileHelpers
         return Path.Join(directory.FullName, filename);
     }
 
+    public static string[] ReadLines(int day) =>
+        File.ReadAllLines(GetFilepath(day));
+
     public static T[] ReadLines<T>(int day) where T : IParsable<T>, INumber<T>
     {
         var provider = new NumberFormatInfo();
