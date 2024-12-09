@@ -146,14 +146,7 @@ public class Day09 : IDay
             
             var newGap = gap with { Length = gap.Length - file.Length, Start = gap.Start + file.Length };
 
-            var targetList = gapMap[newGap.Length];
-            var addBefore = targetList.First;
-            while (addBefore is not null && addBefore.Value.Start < newGap.Start)
-                addBefore = addBefore.Next;
-            if (addBefore is null)
-                targetList.AddLast(newGap);
-            else
-                targetList.AddBefore(addBefore, newGap);
+            gapMap[newGap.Length].AddBefore(newGap, g => g.Start > newGap.Start);
         }
 
         return ToDisk(movedFiles);
