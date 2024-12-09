@@ -79,31 +79,6 @@ public class Day09 : IDay
         return current;
     }
 
-    private Dictionary<int, LinkedList<int>> FindGaps(int[] disk)
-    {
-        var gaps = new Dictionary<int, LinkedList<int>>();
-        
-        for (var i = 0; i < disk.Length; i++)
-        {
-            if (disk[i] >= 0)
-                continue;
-            
-            var start = i;
-            var length = 0;
-
-            while (disk[i++] < 0)
-            {
-                length++;
-            }
-
-            if (!gaps.ContainsKey(length))
-                gaps[length] = [];
-            gaps[length].AddLast(start);
-        }
-
-        return gaps;
-    }
-
     // Key is length of gap
     // Value is linked list of gaps, ordered by starting index
     private Dictionary<int, LinkedList<ContiguousBlock>> GetGaps(ContiguousBlock[] gaps)
@@ -125,7 +100,7 @@ public class Day09 : IDay
         return gaps
             .Where(pair => pair.Key >= file.Length)
             .Select(pair => pair.Value.First?.Value)
-            .Where(cb => cb is not null)
+            .FilterNull()
             .Where(g => g.Start < file.Start)
             .OrderBy(g => g.Start)
             .FirstOrDefault();
@@ -138,7 +113,6 @@ public class Day09 : IDay
             throw new NullReferenceException("Files cannot be null");
 
         var lastIndex = lastFile.Start + lastFile.Length;
-
         var disk = new int[lastIndex];
 
         foreach (var file in files)
@@ -153,41 +127,33 @@ public class Day09 : IDay
     private int[] DefragFiles(ContiguousBlock[] files, ContiguousBlock[] gaps)
     {
         var movedFiles = new List<ContiguousBlock>();
-        var remainingFiles = new LinkedList<ContiguousBlock>(files.OrderByDescending(f => f.Id));
         var gapMap = GetGaps(gaps);
 
-        while (remainingFiles.Count > 0)
+        foreach (var file in files.OrderByDescending(f => f.Id))
         {
-            var file = remainingFiles.First?.Value;
-            remainingFiles.RemoveFirst();
-
-            if (file is null)
-                throw new NullReferenceException("File should not be null");
-
             var gap = FindGap(gapMap, file);
-            if (gap is not null)
-            {
-                movedFiles.Add(file with {Start = gap.Start});
-                gapMap[gap.Length].Remove(gap);
-
-                if (gap.Length > file.Length)
-                {
-                    var newGap = gap with { Length = gap.Length - file.Length, Start = gap.Start + file.Length };
-
-                    var targetList = gapMap[newGap.Length];
-                    var addBefore = targetList.First;
-                    while (addBefore is not null && addBefore.Value.Start < newGap.Start)
-                        addBefore = addBefore.Next;
-                    if (addBefore is null)
-                        targetList.AddLast(newGap);
-                    else
-                        targetList.AddBefore(addBefore, newGap);
-                }
-            }
-            else
+            if (gap == null)
             {
                 movedFiles.Add(file);
+                continue;
             }
+            
+            movedFiles.Add(file with {Start = gap.Start});
+            gapMap[gap.Length].Remove(gap);
+
+            if (gap.Length <= file.Length)
+                continue;
+            
+            var newGap = gap with { Length = gap.Length - file.Length, Start = gap.Start + file.Length };
+
+            var targetList = gapMap[newGap.Length];
+            var addBefore = targetList.First;
+            while (addBefore is not null && addBefore.Value.Start < newGap.Start)
+                addBefore = addBefore.Next;
+            if (addBefore is null)
+                targetList.AddLast(newGap);
+            else
+                targetList.AddBefore(addBefore, newGap);
         }
 
         return ToDisk(movedFiles);
