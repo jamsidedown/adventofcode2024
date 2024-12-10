@@ -7,7 +7,7 @@ public static class FileHelpers
 {
     public static string GetFilepath(int day)
     {
-        var filename = $"input/day{day:X2}.txt";
+        var filename = $"input/day{day:D2}.txt";
         var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
 
         while (!File.Exists(Path.Join(directory.FullName, filename)))
