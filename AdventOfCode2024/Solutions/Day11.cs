@@ -32,38 +32,18 @@ public class Day11 : IDay
         if (_cache.TryGetValue((stone, times), out var count))
             return count;
 
-        var stones = Blink(stone);
-
-        var result = 0L;
-
-        foreach (var s in stones)
-            result += CountBlinks(s, times - 1);
-        
+        var result = Blink(stone).Sum(s => CountBlinks(s, times - 1));
         _cache.Add((stone, times), result);
         
         return result;
     }
 
-    public long Part1(long[] stones)
-    {
-        var result = 0L;
+    public long Part1(long[] stones) =>
+        stones.Sum(stone => CountBlinks(stone, 25));
 
-        foreach (var stone in stones)
-            result += CountBlinks(stone, 25);
+    public long Part2(long[] stones) =>
+        stones.Sum(stone => CountBlinks(stone, 75));
 
-        return result;
-    }
-
-    public long Part2(long[] stones)
-    {
-        var result = 0L;
-
-        foreach (var stone in stones)
-            result += CountBlinks(stone, 75);
-
-        return result;
-    }
-    
     public void Run()
     {
         var stones = Parse();
