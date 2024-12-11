@@ -19,7 +19,7 @@ public class Day11Tests
             var subStones = new List<long>(current.Count);
             
             foreach (var stone in current)
-            foreach(var part in _solution.Blink(stone))
+            foreach(var part in Day11.Blink(stone))
                 subStones.Add(part);
 
             current = subStones;

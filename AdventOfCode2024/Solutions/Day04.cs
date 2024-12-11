@@ -46,8 +46,6 @@ public class Day04 : IDay
                && Walk(grid, coord, direction, remaining[1..]);
     }
     
-    
-
     private bool IsMas(char[][] grid, int x, int y)
     {
         if (grid[x][y] != 'A')
@@ -82,13 +80,9 @@ public class Day04 : IDay
         var count = 0;
         
         for (var x = 1; x < grid[0].Length - 1; x++)
-        {
-            for (var y = 1; y < grid.Length - 1; y++)
-            {
-                if (IsMas(grid, x, y))
-                    count++;
-            }
-        }
+        for (var y = 1; y < grid.Length - 1; y++)
+            if (IsMas(grid, x, y))
+                count++;
 
         return count;
     }

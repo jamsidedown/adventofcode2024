@@ -15,56 +15,56 @@ public class Day10 : IDay
             && position.Y >= 0 && position.Y < map.Length;
     }
 
-    private readonly Dictionary<XyPair<int>, HashSet<XyPair<int>>> _trailheadCache = new();
+    private Func<XyPair<int>, HashSet<XyPair<int>>>? _getTrailheads;
     
     private HashSet<XyPair<int>> GetTrailheads(int[][] map, XyPair<int> position)
     {
-        if (_trailheadCache.TryGetValue(position, out var cached))
-            return cached;
-        
-        var current = map[position.Y][position.X];
-        
-        if (current == 9)
-            return [position];
-
-        var trailheads = new HashSet<XyPair<int>>();
-
-        foreach (var direction in _vectors)
+        _getTrailheads ??= Cache.Memoize<XyPair<int>, HashSet<XyPair<int>>>((func, pos) =>
         {
-            var next = position + direction;
-            if (InGrid(map, next) && map[next.Y][next.X] == current + 1)
-                trailheads.UnionWith(GetTrailheads(map, next));
-        }
-        
-        _trailheadCache.Add(position, trailheads);
+            var current = map[pos.Y][pos.X];
 
-        return trailheads;
+            if (current == 9)
+                return [pos];
+
+            var trailheads = new HashSet<XyPair<int>>();
+
+            foreach (var direction in _vectors)
+            {
+                var next = pos + direction;
+                if (InGrid(map, next) && map[next.Y][next.X] == current + 1)
+                    trailheads.UnionWith(func(next));
+            }
+
+            return trailheads;
+        });
+
+        return _getTrailheads(position);
     }
 
-    private readonly Dictionary<XyPair<int>, int> _countCache = new();
+    private Func<XyPair<int>, int>? _countTrailheads;
     
     private int CountTrailheads(int[][] map, XyPair<int> position)
     {
-        if (_countCache.TryGetValue(position, out var cached))
-            return cached;
-        
-        var current = map[position.Y][position.X];
-        
-        if (current == 9)
-            return 1;
-
-        var count = 0;
-
-        foreach (var direction in _vectors)
+        _countTrailheads ??= Cache.Memoize<XyPair<int>, int>((func, pos) =>
         {
-            var next = position + direction;
-            if (InGrid(map, next) && map[next.Y][next.X] == current + 1)
-                count += CountTrailheads(map, next);
-        }
-        
-        _countCache.Add(position, count);
+            var current = map[pos.Y][pos.X];
 
-        return count;
+            if (current == 9)
+                return 1;
+
+            var count = 0;
+            
+            foreach (var direction in _vectors)
+            {
+                var next = pos + direction;
+                if (InGrid(map, next) && map[next.Y][next.X] == current + 1)
+                    count += func(next);
+            }
+
+            return count;
+        });
+
+        return _countTrailheads(position);
     }
     
     public int Part1(int[][] map)
