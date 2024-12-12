@@ -70,6 +70,11 @@ public class Day05 : IDay
 
     public int Part1(Rules rules, int[][] manuals)
     {
+        // parse ruleset as a dictionary mapping each page to a set of pages that must come after it
+        // for each page in a manual, keep track of pages seen
+        // ensure that the set of pages that must come after has no intersection with pages seen
+        // all manuals have odd number of pages, so middle is just length/2
+        
         var total = 0;
 
         foreach (var manual in manuals)
@@ -98,6 +103,12 @@ public class Day05 : IDay
 
     public int Part2(Rules rules, int[][] manuals)
     {
+        // only fix incorrect manuals
+        // noticed while debugging that rules had unique numbers of pages that must come after
+        // only look at relevant rules for a manual by intersecting rules with pages in a manual
+        // order pages by number of rules that apply to it, highest to lowest
+        // find middle same as part 1
+        
         var total = 0;
 
         foreach (var manual in manuals)

@@ -92,6 +92,11 @@ public class Day08 : IDay
     
     public int Part1(char[][] map)
     {
+        // parse the input into a dictionary mapping a character to all the coordinates of that character
+        // for each character, calculate the x,y distance between each pair of coordinates
+        // add the distance to one of the coords in the pair, subtract from the other
+        // count the number of positions that are within the bounds of the map
+        
         var positions = new HashSet<XyPair<int>>();
         var coords = GetCoords(map);
         
@@ -107,6 +112,10 @@ public class Day08 : IDay
 
     public int Part2(char[][] map)
     {
+        // similar to part 1, but reduce the x,y distance in cases where x and y share factors
+        // not sure if that matters, but there could be pairs that are 2,4 apart, so everything 1,2 from them would be in the line
+        // continuously add or subtract the vector while inside the map
+        
         var positions = new HashSet<XyPair<int>>();
         var coords = GetCoords(map);
         

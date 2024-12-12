@@ -165,12 +165,24 @@ public class Day09 : IDay
     
     public long Part1(int[] disk)
     {
+        // parse the disk as an array of integers
+        // keep track of the index of the leftmost empty block
+        // keep track of the index of the rightmost populated block
+        // walk the indexes towards the centre, moving populated blocks to empty blocks
+        // meet in the middle
+        
         var defragged = DefragBlocks(disk);
         return Checksum(defragged);
     }
     
     public long Part2(ContiguousBlock[] files, ContiguousBlock[] gaps)
     {
+        // create a dictionary mapping sizes of gaps to gaps in the disk
+        // gaps are sorted by their index from the start of the disk
+        // for each file, find the earliest gap it will fit into with equal or greater size
+        // move the file, and recalculate the size of the gap
+        // move the new gap to the appropriate list in the dictionary, positioning it based on its index
+        
         var defragged = DefragFiles(files, gaps);
         return Checksum(defragged);
     }

@@ -69,6 +69,11 @@ public class Day10 : IDay
     
     public int Part1(int[][] map)
     {
+        // for each 0 in the map
+        // recursively step in each direction with a 1
+        // repeat until find a 9
+        // count unique peaks accessible from each starting point
+        
         var count = 0;
         
         for (var y = 0; y < map.Length; y++)
@@ -81,6 +86,9 @@ public class Day10 : IDay
 
     public int Part2(int[][] map)
     {
+        // similar to part 1, but count total possible paths from 0 to 9
+        // (count forked paths that end at the same point as multiple paths)
+        
         var count = 0;
         
         for (var y = 0; y < map.Length; y++)

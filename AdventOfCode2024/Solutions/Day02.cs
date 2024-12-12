@@ -40,11 +40,17 @@ public class Day02 : IDay
     
     public int Part1(int[][] reports)
     {
+        // calculate differences between successive levels in each report
+        // check they're all increasing by 1-3, or decreasing by 1-3 each step
+        
         return reports.Count(IsValid);
     }
     
     public int Part2(int[][] reports)
     {
+        // generate all possible reports where one element has been removed
+        // check if any of the possible variations for each report are valid
+        
         return reports.Count(IsValidAfterDamping);
     }
     

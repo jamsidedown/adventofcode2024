@@ -63,6 +63,10 @@ public class Day07 :IDay
     
     public long Part1(Equation[] equations)
     {
+        // try both operators recursively
+        // end branches early if it passes the target result
+        // no negative or zero values, so a new value will always increase the result
+        
         return equations
             .Where(eq => CanCalibrate(eq.Target, eq.Numbers[0], eq.Numbers[1..]))
             .Sum(eq => eq.Target);
@@ -70,6 +74,8 @@ public class Day07 :IDay
     
     public long Part2(Equation[] equations)
     {
+        // exactly the same as part 1, but with three operators
+        
         return equations
             .Where(eq => CanRecalibrate(eq.Target, eq.Numbers[0], eq.Numbers[1..]))
             .Sum(eq => eq.Target);

@@ -6,13 +6,7 @@ public class Day06 : IDay
 {
     private char[][] Parse() => FileHelpers.ReadLines(6, s => s.ToArray());
 
-    private readonly XyPair<int>[] _vectors = new[]
-    {
-        new XyPair<int>(0, -1),
-        new XyPair<int>(1, 0),
-        new XyPair<int>(0, 1),
-        new XyPair<int>(-1, 0)
-    };
+    private readonly XyPair<int>[] _vectors = [new(0, -1), new(1, 0), new(0, 1), new(-1, 0)];
 
     public XyPair<int> FindStart(char[][] map)
     {
@@ -137,12 +131,22 @@ public class Day06 : IDay
     
     public int Part1(char[][] map)
     {
+        // the array of direction vectors does a lot of heavy lifting here
+        // from the start position, step forwards until outside the bounds of the map
+        // every collision, increment the direction counter
+        // current vector is direction%4
+        
         var start = FindStart(map);
         return Walk(map, start).Count;
     }
 
     public int Part2(char[][] map)
     {
+        // walk the same path as in part 1
+        // at every step, place an obstacle in front and walk that path until it loops
+        // check for looping by keeping a hashset of the current position and direction%4
+        // brute forcing takes a while, but it's still a lot faster than my first attempt
+        
         var start = FindStart(map);
         return CountLoops(map, start);
     }

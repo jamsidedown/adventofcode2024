@@ -129,9 +129,18 @@ public class Day12 : IDay
     }
 
     public int Part1(char[][] map) =>
+        // keep track of plots that haven't been visited yet with a hashset
+        // take an unvisited plot, recursively search around it for plots of the same type, removing them from the visited set
+        // the area of each region is just the count
+        // the perimeter for a plot can be calculated as 4-<the number of neighbours of the same type>
         GetRegions(map).Select(r => Area(r) * Perimeter(r)).Sum();
 
     public int Part2(char[][] map) =>
+        // similar to part 1
+        // calculate how many sides a region has by getting all plots in a region with no neighbour in a given direction
+        // group those plots by splitting them into subgroups (same recursive exploration as before)
+        // the number of sides facing a direction is equal to the number of subgroups
+        // repeat for each direction
         GetRegions(map).Select(r => Area(r) * Sides(r)).Sum();
     
     public void Run()

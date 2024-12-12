@@ -18,6 +18,10 @@ public class Day03 : IDay
     
     public int Part1(string[] input)
     {
+        // find all mul(x,y) matches in the input
+        // parse and calculate each instruction
+        // sum
+        
         var total = 0;
 
         foreach (var line in input)
@@ -31,6 +35,12 @@ public class Day03 : IDay
 
     public int Part2(string[] input)
     {
+        // find all do(), don't(), and mul(x,y) in the input
+        // iterate through all matched instructions
+        // keep track of whether instructions are enabled
+        // parse and calculate enabled instructions
+        // sum
+        
         var total = 0;
         var enable = true;
 

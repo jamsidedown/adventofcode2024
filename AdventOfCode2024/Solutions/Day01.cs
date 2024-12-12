@@ -17,6 +17,9 @@ public class Day01 : IDay
 
     public int Part1(int[] left, int[] right)
     {
+        // sort both arrays of numbers
+        // sum the difference of each of the elements
+        
         return left.Order()
             .Zip(right.Order())
             .Select(pair => Math.Abs(pair.Second - pair.First))
@@ -25,6 +28,9 @@ public class Day01 : IDay
 
     public int Part2(int[] left, int[] right)
     {
+        // count the elements in the right array
+        // sum the counts where an element is in both arrays
+        
         var counts = right.CountBy(x => x).ToDictionary();
         return left
             .Where(x => counts.ContainsKey(x))

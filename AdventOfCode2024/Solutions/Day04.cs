@@ -58,6 +58,10 @@ public class Day04 : IDay
 
     public int Part1(char[][] grid)
     {
+        // look through every cell in the grid for 'X'
+        // walk in each direction as long as inside grid
+        // recursively check for 'M', 'A', 'S'
+        
         var count = 0;
         
         for (var x = 0; x < grid[0].Length; x++)
@@ -77,6 +81,9 @@ public class Day04 : IDay
 
     public int Part2(char[][] grid)
     {
+        // look through grid for 'A'
+        // check for diagonals 'M' 'S' or 'S' 'M'
+        
         var count = 0;
         
         for (var x = 1; x < grid[0].Length - 1; x++)

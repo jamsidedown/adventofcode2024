@@ -33,9 +33,13 @@ public class Day11 : IDay
     });
 
     public long Part1(long[] stones) =>
+        // cache the result of splitting a stone, so each split is only calculated once
+        // cache the number of stones after splitting a stone n times
+        // added functions to memoize function and recursive function results
         stones.Sum(stone => CountBlinks((stone, 25)));
 
     public long Part2(long[] stones) =>
+        // same as part 1
         stones.Sum(stone => CountBlinks((stone, 75)));
 
     public void Run()
