@@ -62,6 +62,9 @@ public class Day13 :IDay
     
     public long Part1(ClawMachine[] clawMachines)
     {
+        // treat the prize X & Y position as a series of simultaneous equations
+        // ignore cases where A is some multiple of B, as they don't seem to appear
+        
         var tokens = 0L;
 
         foreach (var clawMachine in clawMachines)
@@ -76,6 +79,9 @@ public class Day13 :IDay
 
     public long Part2(ClawMachine[] clawMachines)
     {
+        // add 1e13 to each prize X & Y
+        // solve the same as part 1
+        
         clawMachines = clawMachines.Select(machine => machine with { Prize = machine.Prize + 10000000000000L })
             .ToArray();
 
