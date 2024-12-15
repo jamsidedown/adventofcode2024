@@ -20,6 +20,9 @@ public static class FileHelpers
         return Path.Join(directory.FullName, filename);
     }
 
+    public static string ReadText(int day) =>
+        File.ReadAllText(GetFilepath(day));
+    
     public static string[] ReadLines(int day) =>
         File.ReadAllLines(GetFilepath(day));
 
