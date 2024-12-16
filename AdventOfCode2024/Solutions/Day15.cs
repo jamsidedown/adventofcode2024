@@ -4,6 +4,8 @@ namespace AdventOfCode2024.Solutions;
 
 public class Day15 : IDay
 {
+    private record Box(XyPair<int> Left, XyPair<int> Right);
+    
     private readonly XyPair<int>[] _vectors = [new(0, -1), new(1, 0), new(0, 1), new(-1, 0)];
     
     public (char[][], char[]) Parse(string s)
@@ -132,6 +134,79 @@ public class Day15 : IDay
 
         return expanded;
     }
+
+    private Dictionary<XyPair<int>, Box> GetWideBoxes(char[][] map)
+    {
+        var boxes = new Dictionary<XyPair<int>, Box>();
+        
+        for (var y = 0; y < map.Length; y++)
+        for (var x = 0; x < map[0].Length; x++)
+        {
+            if (map[y][x] == '[')
+            {
+                var left = new XyPair<int>(x, y);
+                var right = new XyPair<int>(x + 1, y);
+                var box = new Box(left, right);
+                boxes[left] = box;
+                boxes[right] = box;
+            }
+        }
+
+        return boxes;
+    }
+
+    private (XyPair<int>, Dictionary<XyPair<int>, Box>) MoveWide(XyPair<int> robot, Dictionary<XyPair<int>, Box> boxes,
+        HashSet<XyPair<int>> walls, char instruction)
+    {
+        var vector = GetDirection(instruction);
+        var removed = new List<Box>();
+        var moving = new List<Box>();
+        HashSet<XyPair<int>> targets = [robot + vector];
+
+        while (true)
+        {
+            if (walls.Intersect(targets).Any())
+            {
+                foreach (var box in removed)
+                {
+                    boxes.Add(box.Left, box);
+                    boxes.Add(box.Right, box);
+                }
+
+                return (robot, boxes);
+            }
+
+            var nextTargets = new HashSet<XyPair<int>>();
+            foreach (var target in targets)
+            {
+                if (boxes.TryGetValue(target, out var targetBox))
+                {
+                    var nextTarget = new Box(targetBox.Left + vector, targetBox.Right + vector);
+                    moving.Add(nextTarget);
+                    
+                    removed.Add(targetBox);
+                    boxes.Remove(targetBox.Left);
+                    boxes.Remove(targetBox.Right);
+                    
+                    nextTargets.Add(nextTarget.Left);
+                    nextTargets.Add(nextTarget.Right);
+                }
+            }
+
+            if (nextTargets.Count == 0)
+                break;
+            
+            targets = nextTargets;
+        }
+
+        foreach (var box in moving)
+        {
+            boxes.Add(box.Left, box);
+            boxes.Add(box.Right, box);
+        }
+
+        return (robot + vector, boxes);
+    }
     
     public int Part1(char[][] map, char[] instructions)
     {
@@ -150,8 +225,19 @@ public class Day15 : IDay
     public int Part2(char[][] map, char[] instructions)
     {
         map = Expand(map);
+        var robot = GetStart(map);
+        var walls = GetWalls(map);
+        var boxes = GetWideBoxes(map);
+
+        foreach (var instruction in instructions)
+        {
+            (robot, boxes) = MoveWide(robot, boxes, walls, instruction);
+        }
         
-        return 0;
+        return boxes.Values
+            .Select(box => box.Left)
+            .ToHashSet()
+            .Sum(box => (100 * box.Y) + box.X);
     }
     
     public void Run()
