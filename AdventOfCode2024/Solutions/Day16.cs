@@ -121,7 +121,7 @@ public class Day16 : IDay
         }
     }
 
-    public int Part2(char[][] map)
+    public int Part2Dijkstra(char[][] map)
     {
         var start = Find(map, 'S');
         Step startStep = (start, 1);
@@ -187,6 +187,11 @@ public class Day16 : IDay
         PrintBenches(map, bestVisited);
 
         return bestVisited.Count;
+    }
+    
+    public int Part2(char[][] map)
+    {
+        return 0;
     }
     
     public void Run()
