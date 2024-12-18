@@ -2,20 +2,11 @@ using AdventOfCode2024.Core;
 
 namespace AdventOfCode2024.Solutions;
 
-public struct Registers(long a, long b, long c) : IEquatable<Registers>
+public struct Registers(long a, long b, long c)
 {
-    public long A = a;
-    public long B = b;
-    public long C = c;
-
-    public bool Equals(Registers other) =>
-        A == other.A && B == other.B && C == other.C;
-
-    public override bool Equals(object? obj) =>
-        obj is Registers other && Equals(other);
-
-    public override int GetHashCode() =>
-        HashCode.Combine(A, B, C);
+    public long A { get; set; } = a;
+    public long B { get; set; } = b;
+    public long C { get; set; } = c;
 }
 
 public class Day17 : IDay
@@ -23,44 +14,35 @@ public class Day17 : IDay
     public (Registers, int[]) Parse(string s)
     {
         var parts = s.Trim().Split($"{Environment.NewLine}{Environment.NewLine}");
+        
         var registers = parts[0].Trim()
             .Split(Environment.NewLine)
             .Select(line => line.Trim().Split(' ')[^1])
             .Select(long.Parse)
             .ToArray();
+        
         var instructions = parts[1].Trim()
             .Split(' ')[1]
             .Split(',')
             .Select(int.Parse)
             .ToArray();
+        
         return (new Registers(registers[0], registers[1], registers[2]), instructions);
     }
 
-    private long Combo(Registers registers, int operand)
-    {
-        if (operand <= 3)
-            return operand;
+    private long Combo(Registers registers, int operand) =>
+        operand switch
+        {
+            <= 3 => operand,
+            4 => registers.A,
+            5 => registers.B,
+            6 => registers.C,
+            _ => throw new ArgumentException($"Invalid operand: {operand}")
+        };
 
-        if (operand == 4)
-            return registers.A;
+    private int Pow2(long power) =>
+        power == 0 ? 1 : 2 << (int)(power - 1);
 
-        if (operand == 5)
-            return registers.B;
-
-        if (operand == 6)
-            return registers.C;
-
-        throw new ArgumentException($"Invalid operand: {operand}");
-    }
-
-    private int Pow2(long power)
-    {
-        if (power == 0)
-            return 1;
-
-        return 2 << (int)(power - 1);
-    }
-    
     private List<int> Compute(Registers registers, int[] instructions)
     {
         var output = new List<int>();
@@ -71,47 +53,44 @@ public class Day17 : IDay
             var opcode = instructions[pointer++];
             var operand = instructions[pointer++];
             
-            if (opcode == 0) // adv
+            switch (opcode)
             {
-                var denominator = Pow2(Combo(registers, operand));
-                registers = registers with { A = registers.A / denominator };
-            }
-            else if (opcode == 1) // bxl
-            {
-                registers = registers with { B = registers.B ^ operand };
-            }
-            else if (opcode == 2) // bst
-            {
-                registers = registers with { B = Combo(registers, operand) % 8 };
-            }
-            else if (opcode == 3) // jnz
-            {
-                if (registers.A == 0)
+                // adv
+                case 0:
+                    registers.A /= Pow2(Combo(registers, operand));
+                    break;
+                // bxl
+                case 1:
+                    registers.B ^= operand;
+                    break;
+                // bst
+                case 2:
+                    registers.B = Combo(registers, operand) % 8;
+                    break;
+                // jnz
+                case 3 when registers.A == 0:
                     continue;
-                pointer = operand;
-            }
-            else if (opcode == 4) // bxc
-            {
-                registers = registers with { B = registers.B ^ registers.C };
-            }
-            else if (opcode == 5) // out
-            {
-                var result = (int)(Combo(registers, operand) % 8);
-                output.Add(result);
-            }
-            else if (opcode == 6) // bdv
-            {
-                var denominator = Pow2(Combo(registers, operand));
-                registers = registers with { B = registers.A / denominator };
-            }
-            else if (opcode == 7) // cdv
-            {
-                var denominator = Pow2(Combo(registers, operand));
-                registers = registers with { C = registers.A / denominator };
-            }
-            else
-            {
-                throw new InvalidDataException($"Invalid opcode: {opcode}");
+                case 3:
+                    pointer = operand;
+                    break;
+                // bxc
+                case 4:
+                    registers.B ^= registers.C;
+                    break;
+                // out
+                case 5:
+                    output.Add((int)(Combo(registers, operand) % 8));
+                    break;
+                // bdv
+                case 6:
+                    registers.B = registers.A / Pow2(Combo(registers, operand));
+                    break;
+                // cdv
+                case 7:
+                    registers.C = registers.A / Pow2(Combo(registers, operand));
+                    break;
+                default:
+                    throw new InvalidDataException($"Invalid opcode: {opcode}");
             }
         }
 
@@ -134,12 +113,22 @@ public class Day17 : IDay
 
     public string Part1(Registers registers, int[] instructions)
     {
+        // bulk of the work is in the Compute function
+        // copy opcode definitions to a switch statement
+        // output to a list
+        
         var output = Compute(registers, instructions);
         return string.Join(",", output);
     }
 
     public long Part2(int[] instructions)
     {
+        // wrote down the instructions on paper, and realised that for the last digit register A would need to be less than 8
+        // this is due to the adv 3 instruction in my puzzle input
+        // for the second last digit, 8 <= A < 64
+        // third last, 64 <= A < 512 etc.
+        // keep adding powers of 8 to feasible numbers that produce the correct ending digits
+        
         var possibleAs = new List<long> { 0 };
         
         for (var digit = 0; digit < instructions.Length; digit++)

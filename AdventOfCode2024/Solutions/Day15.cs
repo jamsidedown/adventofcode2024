@@ -11,14 +11,17 @@ public class Day15 : IDay
     public (char[][], char[]) Parse(string s)
     {
         var parts = s.Trim().Split($"{Environment.NewLine}{Environment.NewLine}");
+        
         var map = parts[0].Trim()
             .Split(Environment.NewLine)
             .Select(line => line.ToArray())
             .ToArray();
+        
         var instructions = parts[1].Trim()
             .Split(Environment.NewLine)
             .SelectMany(line => line.ToArray())
             .ToArray();
+        
         return (map, instructions);
     }
 
@@ -210,6 +213,10 @@ public class Day15 : IDay
     
     public int Part1(char[][] map, char[] instructions)
     {
+        // for a given instruction find all contiguous boxes in front of the robot
+        // if a wall is found, then do nothing
+        // if a gap is found, then move all boxes in that direction, then the robot
+        
         var robot = GetStart(map);
         var boxes = GetBoxes(map);
         var walls = GetWalls(map);
@@ -224,6 +231,11 @@ public class Day15 : IDay
 
     public int Part2(char[][] map, char[] instructions)
     {
+        // expand the map so boxes are 2 spaces wide
+        // create a dictionary mapping every edge of a box with the box as a whole
+        // find edge of boxes in front of the robot, get both halves of each box, and use those to look for more collisions
+        // if all boxes have a gap in front then move, otherwise do nothing
+        
         map = Expand(map);
         var robot = GetStart(map);
         var walls = GetWalls(map);

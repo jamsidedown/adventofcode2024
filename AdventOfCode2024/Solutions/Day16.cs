@@ -84,6 +84,9 @@ public class Day16 : IDay
     
     public long Part1(char[][] map)
     {
+        // create a lookup of every coordinate to every neighbour with the direction the neighbour is in
+        // solve using dijkstra, if the current direction is different to the neighbour direction then add 1000
+        
         var start = Find(map, 'S');
         Step startStep = (start, 1);
 
@@ -147,6 +150,11 @@ public class Day16 : IDay
     
     public int Part2(char[][] map)
     {
+        // similar to part 1, but include active neighbours in the foreach loop
+        // include a case for new distance == old distance
+        // keep track of previous coordinate(s)
+        // backtrack from finish(es) to all previous coordinates
+        
         var start = Find(map, 'S');
         Step startStep = (start, 1); // facing E
 

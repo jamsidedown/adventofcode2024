@@ -103,6 +103,8 @@ public class Day18 : IDay
 
     public int Part1(XyPair<int>[] corruptions, int width, int height)
     {
+        // dijkstras again
+        
         var distances = Dijkstra(corruptions.ToHashSet(), width, height);
         var end = new XyPair<int>(width - 1, height - 1);
         var (distance, _) = distances[end];
@@ -111,6 +113,10 @@ public class Day18 : IDay
 
     public XyPair<int> Part2(XyPair<int>[] corruptions, int width, int height, int atLeast)
     {
+        // dijkstras while keeping track of previous coordinates, so I can reconstruct the route
+        // can then advance through the corruptions until one forces the shortest path to change
+        // keep looking until there isn't a solution to get to the end
+        
         var end = new XyPair<int>(width - 1, height - 1);
         var length = atLeast;
         
