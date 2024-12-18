@@ -33,8 +33,8 @@ public class Day17Tests
     [Fact]
     public void TestPart2()
     {
-        var (registers, program) = _solution.Parse(_secondTestInput);
-        var result = _solution.Part2(registers, program);
+        var (_, program) = _solution.Parse(_secondTestInput);
+        var result = _solution.Part2(program);
         Assert.Equal(117440L, result);
     }
 }
