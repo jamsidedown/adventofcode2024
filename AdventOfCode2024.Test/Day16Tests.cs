@@ -71,7 +71,7 @@ public class Day16Tests
     [Fact]
     public void TestPart2WithSecondExample()
     {
-        var map = _solution.Parse(_firstExampleInput);
+        var map = _solution.Parse(_secondExampleInput);
         var result = _solution.Part2(map);
         Assert.Equal(64, result);
     }

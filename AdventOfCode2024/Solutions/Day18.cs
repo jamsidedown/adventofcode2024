@@ -92,7 +92,6 @@ public class Day18 : IDay
             visited.Add(current);
 
             var (_, previous) = distances[current];
-
             if (previous is null)
                 break;
 

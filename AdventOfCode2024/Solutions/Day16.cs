@@ -4,7 +4,11 @@ namespace AdventOfCode2024.Solutions;
 
 using Step = (XyPair<int>, int);
 
-internal record Route(HashSet<XyPair<int>> Visited, long Distance);
+internal class Route(long distance)
+{
+    public long Distance { get; set; } = distance;
+    public List<Step> Previous { get; } = [];
+}
 
 public class Day16 : IDay
 {
@@ -56,6 +60,26 @@ public class Day16 : IDay
         }
 
         return neighbours;
+    }
+    
+    private HashSet<Step> GetVisited(Dictionary<Step, Route> distances, params Step[] ends)
+    {
+        var visited = new HashSet<Step>();
+        var active = ends.ToHashSet();
+
+        while (active.Count > 0)
+        {
+            var current = active.First();
+            visited.Add(current);
+            active.Remove(current);
+
+            var route = distances[current];
+            foreach (var previous in route.Previous)
+                if (!visited.Contains(previous))
+                    active.Add(previous);
+        }
+
+        return visited;
     }
     
     public long Part1(char[][] map)
@@ -120,83 +144,75 @@ public class Day16 : IDay
             Console.WriteLine(string.Join("", line));
         }
     }
-
-    public int Part2Dijkstra(char[][] map)
+    
+    public int Part2(char[][] map)
     {
         var start = Find(map, 'S');
-        Step startStep = (start, 1);
+        Step startStep = (start, 1); // facing E
 
         var neighbours = GetNeighbours(map);
         var active = new HashSet<Step> { startStep };
-            
-        var distances = new Dictionary<Step, Route> ();
-        foreach (var step in neighbours.Values.SelectMany(x => x))
-            distances[step] = new Route([], long.MaxValue);
-        distances[startStep] = new Route([start], 0L);
+
+        var distances = new Dictionary<Step, Route>();
+        foreach (var step in neighbours.Values.SelectMany(x => x).Distinct())
+            distances[step] = new Route(long.MaxValue);
+        distances[startStep] = new Route(0L);
 
         while (active.Count > 0)
         {
             var source = active.MinBy(step => distances[step].Distance);
             var (coord, direction) = source;
 
-            foreach (var neighbour in neighbours[coord].Where(n => !active.Contains(n)))
+            foreach (var neighbour in neighbours[coord])
             {
-                var (nCoord, nDirection) = neighbour;
+                var (_, nDirection) = neighbour;
                 if (Math.Abs(nDirection - direction) == 2)
                     // opposite direction, ignore
                     continue;
 
                 var route = distances[source];
                 var distance = route.Distance + (direction == nDirection ? 1 : 1001);
+                var nRoute = distances[neighbour];
                 
-                if (distance < distances[neighbour].Distance)
+                if (distance < nRoute.Distance)
                 {
-                    var nVisited = route.Visited.ToHashSet();
-                    nVisited.Add(nCoord);
-                    distances[neighbour] = new Route(nVisited, distance);
+                    nRoute.Distance = distance;
+                    nRoute.Previous.Add(source);
                     active.Add(neighbour);
                 }
-                else if (distance == distances[neighbour].Distance)
+                else if (distance == nRoute.Distance)
                 {
-                    var nVisited = distances[neighbour].Visited.ToHashSet();
-                    nVisited.UnionWith(route.Visited);
-                    nVisited.Add(nCoord);
-                    distances[neighbour] = new Route(nVisited, distance);
+                    nRoute.Previous.Add(source);
                     active.Add(neighbour);
                 }
             }
-            
+
             active.Remove(source);
         }
-        
+
         var end = Find(map, 'E');
         var endSteps = Enumerable.Range(0, _vectors.Length).Select(Step (dir) => (end, dir));
-        var endRoutes = new List<Route>();
+        var endRoutes = new List<(Route, Step)>();
         foreach (var endStep in endSteps)
-        {
             if (distances.TryGetValue(endStep, out var route))
-                endRoutes.Add(route);
-        }
-
-        var minDistance = endRoutes.Min(r => r.Distance);
-        var bestRoutes = endRoutes.Where(route => route.Distance == minDistance);
-        var bestVisited = new HashSet<XyPair<int>>();
-        foreach (var route in bestRoutes)
-            bestVisited.UnionWith(route.Visited);
+                endRoutes.Add((route, endStep));
         
-        PrintBenches(map, bestVisited);
+        var minDistance = endRoutes.Min(r => r.Item1.Distance);
+        var bestRoutes = endRoutes.Where(route => route.Item1.Distance == minDistance);
+        var bestSteps = bestRoutes.Select(route => route.Item2).ToArray();
 
-        return bestVisited.Count;
-    }
-    
-    public int Part2(char[][] map)
-    {
-        return 0;
+        var visitedSteps = GetVisited(distances, bestSteps);
+        var visitedCoords = visitedSteps.Select(step => step.Item1).ToHashSet();
+        
+        // PrintBenches(map, visitedCoords);
+
+        return visitedCoords.Count;
     }
     
     public void Run()
     {
         var map = Parse(FileHelpers.ReadText(16));
-        Console.Write($"Part 1: {Part1(map)}");
+        Console.WriteLine($"Part 1: {Part1(map)}");
+        Console.WriteLine($"Part 2: {Part2(map)}");
     }
 }
