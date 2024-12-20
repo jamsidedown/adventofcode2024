@@ -19,7 +19,7 @@ public class Day20 : IDay
         for (var y = -range; y <= range; y++)
         {
             var coord = new XyPair<int>(x, y);
-            if (coord.EuclideanValue <= range && coord != origin)
+            if (coord.ManhattanValue <= range && coord != origin)
                 cheats.Add(coord);
         }
         
@@ -149,7 +149,7 @@ public class Day20 : IDay
                 if (distancesFromEnd.TryGetValue(potentialCheatEnd, out var pair))
                 {
                     var (distanceFromEnd, _) = pair;
-                    if (distanceFromStart + distanceFromEnd + cheatVector.EuclideanValue <= target)
+                    if (distanceFromStart + distanceFromEnd + cheatVector.ManhattanValue <= target)
                         count++;
                 }
             }
