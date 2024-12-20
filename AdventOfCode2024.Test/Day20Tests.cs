@@ -48,4 +48,18 @@ public class Day20Tests
         var result = _solution.Part1(_exampleInput, 12);
         Assert.Equal(8, result);
     }
+
+    [Fact]
+    public void TestPart2Saves76psThreeTimes()
+    {
+        var result = _solution.Part2(_exampleInput, 76);
+        Assert.Equal(3, result);
+    }
+
+    [Fact]
+    public void TestPart2Saves74psSevenTimes()
+    {
+        var result = _solution.Part2(_exampleInput, 74);
+        Assert.Equal(7, result);
+    }
 }

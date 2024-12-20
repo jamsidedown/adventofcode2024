@@ -10,9 +10,22 @@ public class Day20 : IDay
     // N, E, S, W
     private readonly XyPair<int>[] _vectors = [new(0, -1), new(1, 0), new(0, 1), new(-1, 0)];
 
-    private readonly XyPair<int>[] _cheatRange =
-        [new(0, -2), new(1, -1), new(2, 0), new(1, 1), new(0, 2), new(-1, 1), new(-2, 0), new(-1, -1)];
+    private XyPair<int>[] GetCheatRange(int range)
+    {
+        var cheats = new List<XyPair<int>>();
+        var origin = new XyPair<int>(0, 0);
 
+        for (var x = -range; x <= range; x++)
+        for (var y = -range; y <= range; y++)
+        {
+            var coord = new XyPair<int>(x, y);
+            if (coord.EuclideanValue <= range && coord != origin)
+                cheats.Add(coord);
+        }
+        
+        return cheats.ToArray();
+    }
+    
     private bool InBounds(char[][] map, XyPair<int> coord) =>
         coord.X > 0 && coord.X < (map[0].Length - 1) && coord.Y > 0 && coord.Y < (map.Length - 1);
     
@@ -101,8 +114,8 @@ public class Day20 : IDay
 
         return visited;
     }
-        
-    public int Part1(char[][] map, int timeSave)
+
+    private int CountCheatPaths(char[][] map, int timeSave, int cheatLimit)
     {
         var count = 0;
         
@@ -117,6 +130,8 @@ public class Day20 : IDay
         var target = noCheat - timeSave;
 
         var visited = GetVisited(distancesFromStart, end);
+
+        var cheatRange = GetCheatRange(cheatLimit);
         
         // don't bother checking in the final <timeSave> steps of the route
         var relevantFromStart = visited.Where(coord => distancesFromStart[coord].Item1 < target).ToArray();
@@ -124,15 +139,17 @@ public class Day20 : IDay
         {
             var (distanceFromStart, _) = distancesFromStart[potentialCheatStart];
             
-            foreach (var potentialCheatEnd in _cheatRange.Select(vector => potentialCheatStart + vector))
+            foreach (var cheatVector in cheatRange)
             {
+                var potentialCheatEnd = potentialCheatStart + cheatVector;
+                
                 if (!InBounds(map, potentialCheatEnd))
                     continue;
 
                 if (distancesFromEnd.TryGetValue(potentialCheatEnd, out var pair))
                 {
                     var (distanceFromEnd, _) = pair;
-                    if (distanceFromStart + distanceFromEnd + 2 <= target)
+                    if (distanceFromStart + distanceFromEnd + cheatVector.EuclideanValue <= target)
                         count++;
                 }
             }
@@ -140,10 +157,24 @@ public class Day20 : IDay
         
         return count;
     }
+
+    public int Part1(char[][] map, int timeSave) =>
+        // using dijkstras, get all distances from the start and the end
+        // find path from start to end
+        // ignore the tail of the route where a cheat/shortcut wouldn't give enough of a timesave
+        // for each potential cheat start position
+        // see how many of the potential cheat end positions intersect with distances from the end
+        // count how many of those result in a large enough time save
+        CountCheatPaths(map, timeSave, 2);
+
+    public int Part2(char[][] map, int timeSave) =>
+        // same as part 1 but with longer shortcuts
+        CountCheatPaths(map, timeSave, 20);
     
     public void Run()
     {
         var map = Parse();
         Console.WriteLine($"Part 1: {Part1(map, 100)}");
+        Console.WriteLine($"Part 2: {Part2(map, 100)}");
     }
 }

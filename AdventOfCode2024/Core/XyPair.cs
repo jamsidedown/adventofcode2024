@@ -45,4 +45,13 @@ public readonly struct XyPair<T>(T x, T y) : IEquatable<XyPair<T>> where T : INu
 
     public override string ToString() =>
         $"({X}, {Y})";
+
+    public T EuclideanValue =>
+        Abs(X) + Abs(Y);
+    
+    public T EuclideanDistance(XyPair<T> other) =>
+        Abs(X - other.X) + Abs(Y - other.Y);
+
+    private static T Abs(T value) =>
+        value >= T.Zero ? value : -value;
 }
