@@ -54,4 +54,7 @@ public readonly struct XyPair<T>(T x, T y) : IEquatable<XyPair<T>> where T : INu
 
     private static T Abs(T value) =>
         value >= T.Zero ? value : -value;
+
+    public static XyPair<T> Origin =>
+        new(T.Zero, T.Zero);
 }
