@@ -23,6 +23,7 @@ var solutions = new Dictionary<int, IDay>
     {19, new Day19()},
     {20, new Day20()},
     {21, new Day21()},
+    {22, new Day22()},
 };
 
 var chosenDays = args switch

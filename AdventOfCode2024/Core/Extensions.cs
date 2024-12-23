@@ -20,4 +20,10 @@ public static class Extensions
             current = current.Next;
         }
     }
+
+    public static IEnumerable<(T, T)> Pairwise<T>(this T[] elems)
+    {
+        for (var i = 1; i < elems.Length; i++)
+            yield return (elems[i - 1], elems[i]);
+    }
 }

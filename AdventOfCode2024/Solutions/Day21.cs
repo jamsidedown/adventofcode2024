@@ -4,12 +4,10 @@ namespace AdventOfCode2024.Solutions;
 
 public class Day21 : IDay
 {
-    // N, E, S, W
     private static readonly XyPair<int> _north = new(0, -1);
     private static readonly XyPair<int> _east = new(1, 0);
     private static readonly XyPair<int> _south = new(0, 1);
     private static readonly XyPair<int> _west = new(-1, 0);
-    private readonly XyPair<int>[] _vectors = [_north, _east, _south, _west];
     
     private readonly Dictionary<char, XyPair<int>> _keypadButtons = new()
     {
@@ -29,257 +27,179 @@ public class Day21 : IDay
 
     private readonly XyPair<int> _invalidRobot = new(0, 0);
 
-    private static readonly Dictionary<char, XyPair<int>> _robotVectors = new()
+    private readonly Dictionary<char, XyPair<int>> _vectors = new()
     {
         { '^', _north }, { '>', _east }, { 'v', _south},{ '<', _west }
     };
 
-    private readonly Dictionary<XyPair<int>, char> _robotChars =
-        _robotVectors.Select(pair => (pair.Value, pair.Key)).ToDictionary();
-    
-    private Dictionary<(char, char), string[]> _keypadCache = new();
-    
-    private string[] KeypadSequences(char from, char to)
+    private readonly Dictionary<XyPair<int>, char> _vectorChars = new()
     {
-        if (_keypadCache.TryGetValue((from, to), out var sequences))
-            return sequences;
+        { _north, '^' }, { _east, '>' }, { _south, 'v' }, { _west, '<' }
+    };
+    
+    private string[] Parse() => FileHelpers.ReadLines(21);
+
+    private Dictionary<(char, char), List<string>> _combinationsCache = new();
+    
+    private List<string> Combinations(char from, char to, Dictionary<char, XyPair<int>> charToCoord,
+        XyPair<int> invalid)
+    {
+        if (_combinationsCache.TryGetValue((from, to), out var result))
+            return result;
         
-        var toCoord = _keypadButtons[to];
-        var fromCoord = _keypadButtons[from];
-        
+        var target = charToCoord[to];
+
         List<LinkedList<char>> Recurse(XyPair<int> current)
         {
-            if (current == _invalidKeypad)
+            if (current == invalid)
                 return [];
-            
-            if (current == toCoord)
+
+            if (target == current)
             {
                 var list = new LinkedList<char>();
                 list.AddFirst('A');
                 return [list];
             }
-
-            var iterationPresses = new List<LinkedList<char>>();
             
-            var diff = toCoord - current;
+            var iterationCombinations = new List<LinkedList<char>>();
+            var diff = target - current;
 
-            if (diff.X > 0)
+            if (diff.X != 0)
             {
-                foreach (var combination in Recurse(current + _east))
+                var direction = diff.X < 0 ? _west : _east;
+                var next = current + direction;
+                foreach (var sequence in Recurse(next))
                 {
-                    combination.AddFirst(_robotChars[_east]);
-                    iterationPresses.Add(combination);
-                }
-            }
-            else if (diff.X < 0)
-            {
-                foreach (var combination in Recurse(current + _west))
-                {
-                    combination.AddFirst(_robotChars[_west]);
-                    iterationPresses.Add(combination);
+                    sequence.AddFirst(_vectorChars[direction]);
+                    iterationCombinations.Add(sequence);
                 }
             }
 
-            if (diff.Y > 0)
+            if (diff.Y != 0)
             {
-                foreach (var combination in Recurse(current + _south))
+                var direction = diff.Y < 0 ? _north : _south;
+                var next = current + direction;
+                foreach (var sequence in Recurse(next))
                 {
-                    combination.AddFirst(_robotChars[_south]);
-                    iterationPresses.Add(combination);
+                    sequence.AddFirst(_vectorChars[direction]);
+                    iterationCombinations.Add(sequence);
                 }
             }
-            else if (diff.Y < 0)
-            {
-                foreach (var combination in Recurse(current + _north))
-                {
-                    combination.AddFirst(_robotChars[_north]);
-                    iterationPresses.Add(combination);
-                }
-            }
+            
+            return iterationCombinations;
+        }
 
-            return iterationPresses;
+        var start = charToCoord[from];
+        var combinations = Recurse(start)
+            .Select(list => string.Join("", list))
+            .ToList();
+        
+        _combinationsCache.Add((from, to), combinations);
+        return combinations;
+    }
+
+    private List<string> KeypadCombinations(char from, char to)
+        => Combinations(from, to, _keypadButtons, _invalidKeypad);
+    
+    private List<string> RobotCombinations(char from, char to)
+        => Combinations(from, to, _robotButtons, _invalidRobot);
+
+    public long CountKeypadSequences(char from, char to, int robots)
+    {
+        var sequences = KeypadCombinations(from, to);
+
+        if (robots == 0)
+            return sequences.Min(s => s.Length);
+
+        return sequences.Min(sequence =>
+        {
+            return $"A{sequence}".ToArray().Pairwise().Sum(pair =>
+            {
+                var (f, t) = pair;
+                return CountRobotSequences(f, t, robots);
+            });
+        });
+    }
+
+    private Dictionary<(char, char, int), long> _robotCache = new();
+
+    public long CountRobotSequences(char from, char to, int robots)
+    {
+        if (robots == 0)
+            return 0L;
+
+        var key = (from, to, robots);
+
+        if (_robotCache.TryGetValue(key, out var optimal))
+            return optimal;
+        
+        var sequences = RobotCombinations(from, to);
+
+        if (robots == 1)
+        {
+            var subResult = sequences.Min(s => s.Length);
+            _robotCache[key] = subResult;
+            return subResult;
         }
         
-        var output = Recurse(fromCoord)
-            .Select(presses => string.Join("", presses))
-            .ToArray();
-        
-        _keypadCache.Add((from, to), output);
-        return output;
+        var result =  sequences.Min(sequence =>
+        {
+            return $"A{sequence}".ToArray().Pairwise().Sum(pair =>
+            {
+                var (f, t) = pair;
+                return CountRobotSequences(f, t, robots - 1);
+            });
+        });
+
+        _robotCache[key] = result;
+        return result;
+    }
+
+    public long CountButtonPresses(string sequence, int robots)
+    {
+        var count = 0L;
+
+        foreach (var pair in $"A{sequence}".ToArray().Pairwise())
+        {
+            var (from, to) = pair;
+            count += CountKeypadSequences(from, to, robots);
+        }
+
+        return count;
     }
     
-    public string[] ShortestKeypadSequences(string sequence)
-    {
-        List<LinkedList<string>> Recurse(char[] remaining)
-        {
-            var iterationSequences = new List<LinkedList<string>>();
-            
-            if (remaining.Length < 2)
-            {
-                iterationSequences.Add(new LinkedList<string>());
-                return iterationSequences;
-            }
-
-            var subSequences = KeypadSequences(remaining[0], remaining[1]);
-
-            foreach (var subSequence in subSequences)
-            {
-                var lists = Recurse(remaining[1..]);
-                foreach (var list in lists)
-                {
-                    list.AddFirst(subSequence);
-                    iterationSequences.Add(list);
-                }
-            }
-
-            return iterationSequences;
-        }
-        
-        var allSequences = Recurse($"A{sequence}".ToArray())
-            .Select(list => string.Join("", list))
-            .ToArray();
-
-        var shortestSequence = allSequences.Min(s => s.Length);
-
-        return allSequences.Where(s => s.Length == shortestSequence)
-            .ToArray();
-    }
-
-    private Dictionary<(char, char), string[]> _robotCache = new();
-    
-    private string[] RobotSequences(char from, char to)
-    {
-        if (_robotCache.TryGetValue((from, to), out var sequences))
-            return sequences;
-
-        var toCoord = _robotButtons[to];
-        var fromCoord = _robotButtons[from];
-
-        List<LinkedList<char>> Recurse(XyPair<int> current)
-        {
-            if (current == _invalidRobot)
-                return [];
-            
-            if (current == toCoord)
-            {
-                var list = new LinkedList<char>();
-                list.AddFirst('A');
-                return [list];
-            }
-
-            var iterationPresses = new List<LinkedList<char>>();
-            var diff = toCoord - current;
-
-            if (diff.X > 0)
-            {
-                foreach (var combination in Recurse(current + _east))
-                {
-                    combination.AddFirst(_robotChars[_east]);
-                    iterationPresses.Add(combination);
-                }
-            }
-            else if (diff.X < 0)
-            {
-                foreach (var combination in Recurse(current + _west))
-                {
-                    combination.AddFirst(_robotChars[_west]);
-                    iterationPresses.Add(combination);
-                }
-            }
-            
-            if (diff.Y > 0)
-            {
-                foreach (var combination in Recurse(current + _south))
-                {
-                    combination.AddFirst(_robotChars[_south]);
-                    iterationPresses.Add(combination);
-                }
-            }
-            else if (diff.Y < 0)
-            {
-                foreach (var combination in Recurse(current + _north))
-                {
-                    combination.AddFirst(_robotChars[_north]);
-                    iterationPresses.Add(combination);
-                }
-            }
-
-            return iterationPresses;
-        }
-
-        var output = Recurse(fromCoord)
-            .Select(presses => string.Join("", presses))
-            .ToArray();
-        
-        _robotCache.Add((from, to), output);
-        return output;
-    }
-
-    public string[] ShortestRobotSequences(string sequence)
-    {
-        List<LinkedList<string>> Recurse(char[] remaining)
-        {
-            var iterationSequences = new List<LinkedList<string>>();
-
-            if (remaining.Length < 2)
-            {
-                iterationSequences.Add(new LinkedList<string>());
-                return iterationSequences;
-            }
-
-            var subSequences = RobotSequences(remaining[0], remaining[1]);
-
-            foreach (var subSequence in subSequences)
-            {
-                var lists = Recurse(remaining[1..]);
-                foreach (var list in lists)
-                {
-                    list.AddFirst(subSequence);
-                    iterationSequences.Add(list);
-                }
-            }
-
-            return iterationSequences;
-        }
-
-        var allSequences = Recurse($"A{sequence}".ToArray())
-            .Select(list => string.Join("", list))
-            .ToArray();
-
-        var shortestSequence = allSequences.Min(s => s.Length);
-
-        return allSequences.Where(s => s.Length == shortestSequence)
-            .ToArray();
-    }
-
     public long Part1(string[] sequences)
     {
-        var result = 0L;
-        
+        var total = 0L;
+
         foreach (var sequence in sequences)
         {
-            var shortestSequence = long.MaxValue;
-            
-            var keypadSequences = ShortestKeypadSequences(sequence);
-            foreach (var keypadSequence in keypadSequences)
-            {
-                var robotSequences = ShortestRobotSequences(keypadSequence);
-                foreach (var robotSequence in robotSequences)
-                {
-                    var humanSequences = ShortestRobotSequences(robotSequence);
-                    shortestSequence = Math.Min(shortestSequence, humanSequences.Min(s => s.Length));
-                }
-            }
-
-            result += shortestSequence * int.Parse(sequence[..^1]);
+            var value = int.Parse(sequence[..^1]);
+            var count = CountButtonPresses(sequence, 2);
+            total += value * count;
         }
 
-        return result;
+        return total;
+    }
+    
+    public long Part2(string[] sequences)
+    {
+        var total = 0L;
+
+        foreach (var sequence in sequences)
+        {
+            var value = int.Parse(sequence[..^1]);
+            var count = CountButtonPresses(sequence, 25);
+            total += value * count;
+        }
+
+        return total;
     }
     
     public void Run()
     {
-        var sequences = FileHelpers.ReadLines(21);
+        var sequences = Parse();
         Console.WriteLine($"Part 1: {Part1(sequences)}");
+        Console.WriteLine($"Part 2: {Part2(sequences)}");
     }
 }
