@@ -2,9 +2,12 @@ using AdventOfCode2024.Core;
 
 namespace AdventOfCode2024.Solutions;
 
+using SellCondition = (int, int , int, int);
+using Price = int;
+
 public class Day22 : IDay
 {
-    private static long _limit = 16777216 - 1;
+    private const long _limit = 16777216 - 1;
 
     private long Iterate(long input)
     {
@@ -28,18 +31,12 @@ public class Day22 : IDay
         return current;
     }
 
-    private Dictionary<long, int[]> _prices = new();
-    private Dictionary<long, int[]> _changes = new();
-
-    private int _cacheCount = 0;
+    private Dictionary<long, Dictionary<SellCondition, Price>> _changes = new();
     
     private void Cache(long input)
     {
-        _cacheCount++;
-        Console.WriteLine($"Cache hit {_cacheCount} times");
-        
-        var changes = new int[2000];
         var prices = new int[2000];
+        var changes = new int[2000];
         
         var current = input;
         var previousPrice = (int)current % 10;
@@ -56,36 +53,34 @@ public class Day22 : IDay
             previousPrice = price;
         }
 
-        _prices[input] = prices;
-        _changes[input] = changes;
-    }
-    
-    private int Sell(long input, (int, int, int, int) sellCondition)
-    {
-        if (!_prices.ContainsKey(input))
-            Cache(input);
-
-        var (a, b, c, d) = sellCondition;
-
-        var prices = _prices[input];
-        var changes = _changes[input];
-
+        var cache = new Dictionary<SellCondition, Price>();
         for (var i = 3; i < 2000; i++)
         {
-            if (a == changes[i - 3] && b == changes[i - 2] && c == changes[i - 1] && d == changes[i])
-                return prices[i];
+            var sellCondition = (changes[i - 3], changes[i - 2], changes[i - 1], changes[i]);
+            if (!cache.ContainsKey(sellCondition))
+                cache[sellCondition] = prices[i];
         }
 
-        return 0;
+        _changes[input] = cache;
+    }
+    
+    private int Sell(long input, SellCondition sellCondition)
+    {
+        if (!_changes.ContainsKey(input))
+            Cache(input);
+
+        var cache = _changes[input];
+
+        return cache.GetValueOrDefault(sellCondition, 0);
     }
 
     public int Sell(long[] numbers, (int, int, int, int) sellCondition) =>
         numbers.Sum(number => Sell(number, sellCondition));
 
-    public long Part1(long[] numbers) =>
+    private long Part1(long[] numbers) =>
         numbers.Sum(n => SecretNumber(n, 2000));
 
-    public int Part2(long[] numbers)
+    private int Part2(long[] numbers)
     {
         var maximum = 0;
         
