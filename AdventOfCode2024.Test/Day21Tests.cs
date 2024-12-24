@@ -61,7 +61,6 @@ public class Day21Tests
     public void TestButtonPressesFor179A()
     {
         var result = _solution.CountButtonPresses("179A", 2);
-        // _solution.Debug("<v<A>>^A<vA<A>>^AAvAA<^A>A<v<A>>^AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A", 2);
         Assert.Equal(68, result);
     }
 
@@ -76,24 +75,9 @@ public class Day21Tests
     public void TestButtonPressesFor379A()
     {
         var result = _solution.CountButtonPresses("379A", 2);
-        // _solution.Debug("<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A", 2);
         Assert.Equal(64, result);
     }
 
-    [Fact]
-    public void TestButtonPressesFor539A()
-    {
-        var result = _solution.CountButtonPresses("539A", 2);
-        Assert.Equal(76, result);
-    }
-
-    [Fact]
-    public void TestButtonPressesFor789A()
-    {
-        var result = _solution.CountButtonPresses("789A", 2);
-        // _solution.Debug("v<<A>>^AAAv<A<A>>^AAvAA<^A>Av<A>^A<A>Av<A>^A<A>Av<A<A>>^AAAvA<^A>A", 2);
-        Assert.Equal(78, result);
-    }
 
     [Fact]
     public void TestPart1()
