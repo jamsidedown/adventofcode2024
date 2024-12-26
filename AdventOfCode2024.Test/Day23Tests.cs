@@ -48,4 +48,12 @@ public class Day23Tests
         var result = _solution.Part1(connections);
         Assert.Equal(7, result);
     }
+
+    [Fact]
+    public void TestPart2()
+    {
+        var connections = _solution.Parse(_exampleInput);
+        var result = _solution.Part2(connections);
+        Assert.Equal("co,de,ka,ta", result);
+    }
 }

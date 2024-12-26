@@ -55,16 +55,64 @@ public class Day23 : IDay
 
         return triplets;
     }
+
+    private string Combine(params string[] values)
+    {
+        var parts = values.SelectMany(v => v.Split(',')).ToArray();
+        Array.Sort(parts);
+        return string.Join(',', parts);
+    }
+
+    private HashSet<string> GetParties(Dictionary<string, HashSet<string>> connections)
+    {
+        var previous = connections;
+
+        var parties = new HashSet<string>();
+        
+        while (previous.Count > 0)
+        {
+            var combined = new Dictionary<string, HashSet<string>>();
+            
+            foreach (var (aKey, aSet) in previous)
+            {
+                foreach (var bKey in aSet)
+                {
+                    var bSet = connections[bKey];
+                    var abKey = Combine(aKey, bKey);
+                    if (combined.ContainsKey(abKey))
+                        continue;
+
+                    var abSet = aSet.Intersect(bSet).ToHashSet();
+
+                    if (abSet.Count == 0)
+                        parties.Add(abKey);
+                    else
+                        combined[abKey] = abSet;
+                }
+            }
+
+            previous = combined;
+        }
+
+        return parties;
+    }
     
     public int Part1(Dictionary<string, HashSet<string>> connections)
     {
         var triplets = GetTriplets(connections, 't');
         return triplets.Count;
     }
+
+    public string Part2(Dictionary<string, HashSet<string>> connections)
+    {
+        var parties = GetParties(connections);
+        return parties.MaxBy(party => party.Length) ?? "";
+    }
     
     public void Run()
     {
         var connections = Parse(FileHelpers.ReadText(23));
         Console.WriteLine($"Part 1: {Part1(connections)}");
+        Console.WriteLine($"Part 2: {Part2(connections)}");
     }
 }
